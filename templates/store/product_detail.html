@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'product_list' %}" class="btn btn-outline-secondary mb-3">&larr; Orqaga</a>
+
+<div class="card p-4 mb-4">
+    <h2>{{ product.name }}</h2>
+    <p class="lead">{{ product.description }}</p>
+    <h3 class="text-success fw-bold">Narxi: {{ product.price }} so'm</h3>
+</div>
+
+<h3 class="mb-3">Mijozlar sharhlari va videolari ({{ reviews.count }})</h3>
+
+<div class="row mb-5">
+    {% for review in reviews %}
+        <div class="col-md-6 mb-3">
+            <div class="card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="m-0 fw-bold">👤 {{ review.client_name }}</h5>
+                    <span class="badge bg-secondary">{{ review.purchase_date }}</span>
+                </div>
+                
+                {% if review.phone_number %}
+                    <p class="mb-2"><strong>📞 Telefon:</strong> {{ review.phone_number }}</p>
+                {% endif %}
+
+                {% if review.video %}
+                    <div class="mt-2">
+                        <p class="mb-1 text-muted"><strong>🎥 Mahsulot ko'rinishi:</strong></p>
+                        <video controls class="w-100 rounded" style="max-height: 260px; background-color: #000;">
+                            <source src="{{ review.video.url }}" type="video/mp4">
+                            Brauzeringiz videoni qo'llab-quvvatlamaydi.
+                        </video>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p class="text-muted">Ushbu mahsulot uchun hali mijozlar fikr qoldirishmagan.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Sharh qoldirish formasi -->
+<div class="card p-4 mb-5 border-primary">
+    <h4 class="card-title mb-3">Siz ham sharh va video qoldiring</h4>
+    
+    <div class="alert alert-info">
+        <strong>Diqqat!</strong> 
+        <ul>
+            <li>Ismingiz va sotib olgan sanangizni kiritishingiz <strong>MAJBURIY</strong>.</li>
+            <li><strong>Kamida 1 ta shart bajarilishi kerak:</strong> Telefon raqamingizni qoldiring <em>YOKI</em> Mahsulot videosini yuklang (xohlasangiz har ikkalasini ham kiritishingiz mumkin).</li>
+        </ul>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label class="form-label font-weight-bold">{{ form.client_name.label }} <span class="required-star">*</span></label>
+            {{ form.client_name }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label font-weight-bold">{{ form.purchase_date.label }} <span class="required-star">*</span></label>
+            {{ form.purchase_date }}
+        </div>
+
+        <hr>
+
+        <div class="mb-3">
+            <label class="form-label font-weight-bold">{{ form.phone_number.label }}</label>
+            {{ form.phone_number }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label font-weight-bold">{{ form.video.label }}</label>
+            {{ form.video }}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg">Sharhni saqlash</button>
+    </form>
+</div>
+{% endblock %}
