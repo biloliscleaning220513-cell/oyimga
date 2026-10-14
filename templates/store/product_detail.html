@@ -1,14 +1,59 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ product.name }}{% endblock %}
+{% load store_tags %}
+{% block title %}{{ product.name }} — {{ site.site_name }}{% endblock %}
 
 {% block content %}
-<a href="{% url 'product_list' %}" class="btn btn-outline-secondary mb-3">&larr; Orqaga</a>
+<a href="{% url 'product_list' %}#products" class="back-link">&larr; Barcha mahsulotlar</a>
 
-<div class="card p-4 mb-4">
-    <h2>{{ product.name }}</h2>
-    <p class="lead">{{ product.description }}</p>
-    <h3 class="text-success fw-bold">Narxi: {{ product.price }} so'm</h3>
+<div class="row g-4 mb-5">
+    <div class="col-lg-6">
+        <div class="gallery">
+            {% if product.image %}
+                <img id="mainImage" src="{{ product.image.url }}" alt="{{ product.name }}" class="gallery-main">
+            {% else %}
+                <div class="gallery-main product-img--empty">👗</div>
+            {% endif %}
+            {% if product.images.all %}
+            <div class="gallery-thumbs">
+                {% if product.image %}<img src="{{ product.image.url }}" alt="" onclick="document.getElementById('mainImage').src=this.src">{% endif %}
+                {% for img in product.images.all %}
+                    <img src="{{ img.image.url }}" alt="" onclick="document.getElementById('mainImage').src=this.src">
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <h1 class="detail-title">{{ product.name }}</h1>
+        <div class="detail-price">{{ product.price|som }}</div>
+        {% if product.size_list %}
+            <div class="sizes">
+                <span>O'lchamlar:</span>
+                {% for s in product.size_list %}<span class="size-chip">{{ s }}</span>{% endfor %}
+            </div>
+        {% endif %}
+        {% if product.description %}<p class="detail-desc">{{ product.description|linebreaksbr }}</p>{% endif %}
+
+        <div class="order-box" id="order">
+            <h2>Buyurtma berish</h2>
+            <form method="post" action="{% url 'product_order' pk=product.pk %}">
+                {% csrf_token %}
+                {% for field in order_form %}
+                <div class="mb-2">
+                    <label class="form-label small">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-accent w-100 mt-2">Buyurtma berish</button>
+            </form>
+            {% if site.bot_url %}
+            <a href="{{ site.bot_url }}?start=p{{ product.pk }}" target="_blank" rel="noopener" class="btn btn-outline-accent w-100 mt-2">
+                ✈️ Telegram bot orqali buyurtma
+            </a>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
 <h3 class="mb-3">Mijozlar sharhlari va videolari ({{ reviews.count }})</h3>
@@ -45,7 +90,7 @@
 </div>
 
 <!-- Sharh qoldirish formasi -->
-<div class="card p-4 mb-5 border-primary">
+<div class="card p-4 mb-5">
     <h4 class="card-title mb-3">Siz ham sharh va video qoldiring</h4>
     
     <div class="alert alert-info">
@@ -81,7 +126,7 @@
             {{ form.video }}
         </div>
 
-        <button type="submit" class="btn btn-primary btn-lg">Sharhni saqlash</button>
+        <button type="submit" class="btn btn-accent btn-lg">Sharhni saqlash</button>
     </form>
 </div>
 {% endblock %}
